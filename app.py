@@ -82,15 +82,17 @@ class MirrorMyManga:
         plt.imshow(cv2.cvtColor(panel, cv2.COLOR_BGR2RGB))
         plt.show()
 
-panel = cv2.imread('testImage4.png')
-mmm = MirrorMyManga(lang="en", device="cpu")
 
-start = time.perf_counter()
-#ROI = mmm.extract_ROI(panel, color=(0, 0, 255))
-panel = mmm.apply_page_flip(panel)
-end = time.perf_counter() - start
-plt.figure(figsize=(20, 10))
-plt.imshow(panel)
-plt.show()
+if __name__ == "__main__":
+    panel = cv2.imread('testImage4.png')
+    mmm = MirrorMyManga(lang="en", device="cpu")
 
-print(f"Time = {end}s")
+    start = time.perf_counter()
+    #ROI = mmm.extract_ROI(panel, color=(0, 0, 255))
+    panel = mmm.apply_page_flip(panel)
+    end = time.perf_counter() - start
+    plt.figure(figsize=(20, 10))
+    plt.imshow(panel)
+    plt.show()
+
+    print(f"Time = {end}s")
