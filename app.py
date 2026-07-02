@@ -122,7 +122,6 @@ class MirrorMyManga:
         imgs_name_list = []
         for fname in os.listdir(input_path):
             path = os.path.join(input_path, fname)
-
             imgs_name_list.append(path)
 
         with open(output_path, "wb") as file:
@@ -224,8 +223,7 @@ class MirrorMyManga:
                 raise Exception("Incorrect format of output_path")
         else:
             raise FileNotFoundError(f"{input_path} File not found")
-        
-                
+
 if __name__ == "__main__":
     mmm = MirrorMyManga(lang="en", device="gpu")
 
@@ -233,8 +231,8 @@ if __name__ == "__main__":
 
     start = time.perf_counter()
     #panel = mmm.transform(panel, show_logs=True)
-    mmm.transform_pdf(input_path="/home/vhvhs/MirrorMyManga/testPDF2.pdf", output_path="/home/vhvhs/MirrorMyManga/testPDF2_result.cbz", output_as="cbz", dpi=200, show_logs=True)
-    #mmm.transform_cbz(input_path="/home/vhvhs/MirrorMyManga/testPDF2_result.cbz", output_path="/home/vhvhs/MirrorMyManga/MYHILLS.pdf", output_as="pdf", show_logs=True)
+    mmm.transform_pdf(input_path="/home/vhvhs/MirrorMyManga/testPDF.pdf", output_path="/home/vhvhs/MirrorMyManga/testPDF_result.pdf", output_as="pdf", dpi=200, show_logs=True)
+    #mmm.transform_cbz(input_path="/home/vhvhs/MirrorMyManga/testPDF4.cbz", output_path="/home/vhvhs/MirrorMyManga/testPDF4_result.cbz", output_as="cbz", show_logs=True)
 
     end = time.perf_counter() - start
     print(f"Time = {end}s")
