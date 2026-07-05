@@ -227,11 +227,11 @@ class MirrorMyManga:
 if __name__ == "__main__":
     mmm = MirrorMyManga(lang="en", device="gpu")
 
-    panel = cv2.imread('testImage4.png')
+    panel = cv2.imread('/home/vhvhs/MirrorMyManga/testFolder4/testImage4.png')
 
     start = time.perf_counter()
-    #panel = mmm.transform(panel, show_logs=True)
-    mmm.transform_pdf(input_path="/home/vhvhs/MirrorMyManga/testPDF.pdf", output_path="/home/vhvhs/MirrorMyManga/testPDF_result.pdf", output_as="pdf", dpi=200, show_logs=True)
+    panel = mmm.transform(panel, show_logs=True)
+    #mmm.transform_pdf(input_path="/home/vhvhs/MirrorMyManga/testPDF.pdf", output_path="/home/vhvhs/MirrorMyManga/testPDF_result.pdf", output_as="pdf", dpi=200, show_logs=True)
     #mmm.transform_cbz(input_path="/home/vhvhs/MirrorMyManga/testPDF4.cbz", output_path="/home/vhvhs/MirrorMyManga/testPDF4_result.cbz", output_as="cbz", show_logs=True)
 
     end = time.perf_counter() - start
