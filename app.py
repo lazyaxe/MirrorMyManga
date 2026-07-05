@@ -7,7 +7,7 @@ import cv2
 from paddleocr import PaddleOCR
 import fitz
 import img2pdf
-
+from pathlib import Path
 #if you want to see the transformed image
 import matplotlib.pyplot as plt
 
@@ -63,11 +63,20 @@ class MirrorMyManga:
         """
             Applies the flipped ROI to the to the detect text ROIs, flips the whole panel then returns the panel
         """
+        start = time.perf_counter()
+
         panel = np.asarray(panel)
-        height, width = np.asarray(panel).shape[:2]
+        height, width = panel.shape[:2]
         new_witdh, new_width = height, width
         aspect_ratio = 1
-        start = time.perf_counter()
+
+        #Max limit for the OG image
+        #This max_limit is used for the final image whreas the other one is for the transformation operations
+        MAX_LIMIT = 89478485
+        if height * width >= MAX_LIMIT:
+            height = int(height * 0.8)
+            width = int(width * 0.8)
+            panel = cv2.resize(panel, dsize=(width, height))
 
         #if the width is too large than simply get a scaled down copy of the 
         #OG panel and perform operations on it
@@ -76,24 +85,17 @@ class MirrorMyManga:
             new_width = MAX_LIMIT
             aspect_ratio = new_width / width
             new_witdh = int(height * aspect_ratio)
-
-        MAX_LIMIT = 89478485
-        if height * width >= MAX_LIMIT:
-            panel = cv2.resize(panel, dsize=(width * 0.8, height * 0.8))
-
-        if verbose:
-            print("length, old_width, aspect_ratio: ", height, width, aspect_ratio)
-            print("new_length, new_width, aspect_ratio : ", new_witdh, new_width, aspect_ratio)
+            if verbose:
+                print("length, old_width, aspect_ratio: ", height, width, aspect_ratio)
+                print("new_length, new_width, aspect_ratio : ", new_witdh, new_width, aspect_ratio)
 
         panel_small = cv2.resize(panel, dsize=(new_width, new_witdh))
 
         #detected text and the boundary boxes
         text, bboxes = self.apply_ocr(panel_small)
         
-
         #scaling back the bboxes to the OG resolution format
-        bboxes = bboxes / aspect_ratio
-        bboxes.astype(np.uint16)
+        bboxes = (bboxes / aspect_ratio).astype(np.uint16)
 
         flipped_panel = np.fliplr(panel)
 
@@ -110,7 +112,7 @@ class MirrorMyManga:
             flipped_panel[y_min: y_max, mirror_x_min: mirror_x_max] = panel[y_min: y_max, x_min: x_max]
 
         if show_logs:
-            print("image transform time: ", time.perf_counter() - start)
+            print("LOG: image transform time = ", time.perf_counter() - start)
         return flipped_panel
 
     def save_imgs_as_pdf(self, input_path, output_path):
@@ -139,7 +141,7 @@ class MirrorMyManga:
             2. If you already have the transformed images, just use the `save_imgs_as_pdf` for PDF and `save_imgs_as_cbz` for CBZ format.
         """
         file_dir, file_name = os.path.split(input_path.removesuffix('.pdf'))
-        result_path = f"/home/vhvhs/MirrorMyManga/result_{file_name}"
+        result_path = Path.cwd() / f"result_{file_name}"
 
         if not os.path.exists(result_path):
             if verbose:
@@ -150,15 +152,26 @@ class MirrorMyManga:
             #First, extract the images from the PDF as a NumPy arrays and then store them as a list of OpenCV objects.
             i = 0
             for page in doc:
-                start = time.perf_counter()
+                #print("Print get images: ", page.get_images())
+                for img in page.get_images():
+                    xref = img[0]
+                    image = doc.extract_image(xref)
+                    panel = cv2.imdecode(np.frombuffer(image["image"], dtype=np.uint8), cv2.IMREAD_COLOR)
+                    print(panel.shape)
+                    cv2.imwrite(f"debug_{xref}.png", panel)
+
                 pix = page.get_pixmap(dpi=dpi, alpha=False)
+
                 panel = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width, pix.n)
                 panel = cv2.cvtColor(panel, cv2.COLOR_RGB2BGR)
                 panel = self.transform(panel, show_logs, verbose)
-                cv2.imwrite(filename=f"{result_path}/{i}.png", img=panel)
+
+                start = time.perf_counter()
+                cv2.imwrite(f"{result_path}/{i}.jpeg", panel, [cv2.IMWRITE_JPEG_QUALITY, 95])
                 if show_logs:
                     print(f"LOG: page{i} saved in {time.perf_counter() - start}s")
                 i += 1
+
             if output_as == "pdf":
                 if show_logs:
                     print("LOG: Starting PDF conversion")
@@ -186,7 +199,7 @@ class MirrorMyManga:
                     print("LOG: namelist = ", zfile.namelist()[:10])
 
             file_dir, file_name = os.path.split(input_path.removesuffix('.cbz'))
-            result_path = f"/home/vhvhs/MirrorMyManga/result_{file_name}"
+            result_path = Path.cwd() / f"result_{file_name}"
             if not os.path.exists(result_path):
                 if show_logs:
                     print("LOG: result directory not found, creating result dir")
@@ -197,8 +210,8 @@ class MirrorMyManga:
             #Extracting, transforming, saving images from the unzipped directory to result directory
             for i, fname in enumerate(os.listdir(input_path.removesuffix('.cbz'))):
                 if fname.endswith(".png") or fname.endswith(".jpg") or fname.endswith(".jpeg"):
-                    panel = cv2.imread(f"/{input_path.removesuffix('.cbz')}/{fname}")
                     start = time.perf_counter()
+                    panel = cv2.imread(f"/{input_path.removesuffix('.cbz')}/{fname}")
                     panel = self.transform(panel, show_logs)
                     cv2.imwrite(f"{result_path}/{i}.png", img=panel)
                     if show_logs:
@@ -224,14 +237,8 @@ class MirrorMyManga:
 if __name__ == "__main__":
     start = time.perf_counter()
     mmm = MirrorMyManga(lang="en", device="gpu")
-    #panel = cv2.imread('/home/vhvhs/MirrorMyManga/testFolder4/testImage4.png')
-    #panel = mmm.transform(panel, show_logs=True)
-    #plt.figure(figsize=(20, 10))
-    #plt.imshow(cv2.cvtColor(panel, cv2.COLOR_BGR2RGB))
-    #plt.show()
 
-    mmm.transform_pdf(input_path="/home/vhvhs/MirrorMyManga/testPDF.pdf", output_path="/home/vhvhs/MirrorMyManga/testPDF_result.pdf", output_as="pdf", dpi=200, show_logs=True, verbose=True)
-    #mmm.transform_cbz(input_path="/home/vhvhs/MirrorMyManga/testPDF4.cbz", output_path="/home/vhvhs/MirrorMyManga/testPDF4_result.cbz", output_as="cbz", show_logs=True)
+    mmm.transform_pdf(input_path="/home/vhvhs/MirrorMyManga/testPDF.pdf", output_path="/home/vhvhs/MirrorMyManga/testPDF_result.pdf", output_as="pdf", dpi=200, show_logs=True, verbose=False)
 
     end = time.perf_counter() - start
     print(f"Program ended in {end}s")
