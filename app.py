@@ -149,24 +149,24 @@ class MirrorMyManga:
             os.mkdir(result_path)
 
         with fitz.open(input_path) as doc:
-            #First, extract the images from the PDF as a NumPy arrays and then store them as a list of OpenCV objects.
+            #First, extract the images/pages from the PDF.
             i = 0
+            start = time.perf_counter()
             for page in doc:
-                #print("Print get images: ", page.get_images())
-                for img in page.get_images():
-                    xref = img[0]
-                    image = doc.extract_image(xref)
-                    panel = cv2.imdecode(np.frombuffer(image["image"], dtype=np.uint8), cv2.IMREAD_COLOR)
-                    print(panel.shape)
-                    cv2.imwrite(f"debug_{xref}.png", panel)
-
+                start = time.perf_counter()
+                #Change DPI if the resulted image will take too long to compute
+                MAX_SIDE_LENGTH = 1988
+                expected_width = int(page.rect.width * dpi / 72)
+                if expected_width >= MAX_SIDE_LENGTH:
+                    dpi = 100
                 pix = page.get_pixmap(dpi=dpi, alpha=False)
-
+                if show_logs:
+                    print(f"Page {i} height, width: {page.get_images()[0][3]}, {page.get_images()[0][2]}")
+                    print(f"DPI of page {i} = {dpi}")
+                    print(f"LOG: Pixmap for page {i} genrated in {time.perf_counter() - start}")
                 panel = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width, pix.n)
                 panel = cv2.cvtColor(panel, cv2.COLOR_RGB2BGR)
                 panel = self.transform(panel, show_logs, verbose)
-
-                start = time.perf_counter()
                 cv2.imwrite(f"{result_path}/{i}.jpeg", panel, [cv2.IMWRITE_JPEG_QUALITY, 95])
                 if show_logs:
                     print(f"LOG: page{i} saved in {time.perf_counter() - start}s")
@@ -182,6 +182,9 @@ class MirrorMyManga:
                 self.save_imgs_as_cbz(input_path=result_path, output_path=output_path)
             else:
                 raise Exception("Incorrect format of output_path")
+            
+            if show_logs:
+                print("Transformed & Saved PDF in ", time.perf_counter() - start)
 
     def transform_cbz(self, input_path: str, output_path: str, show_logs=False, output_as="cbz"):
         """
@@ -237,9 +240,10 @@ class MirrorMyManga:
 if __name__ == "__main__":
     start = time.perf_counter()
     mmm = MirrorMyManga(lang="en", device="gpu")
-
-    mmm.transform_pdf(input_path="/home/vhvhs/MirrorMyManga/testPDF.pdf", output_path="/home/vhvhs/MirrorMyManga/testPDF_result.pdf", output_as="pdf", dpi=200, show_logs=True, verbose=False)
-
+    input_dir = Path.cwd()
+    input_path = os.path.join(input_dir, "testPDF.pdf")
+    output_path = os.path.join(input_dir, "testPDF_result.cbz")
+    mmm.transform_pdf(input_path=input_path, output_path=output_path, output_as="cbz", dpi=200, show_logs=True, verbose=False)
     end = time.perf_counter() - start
     print(f"Program ended in {end}s")
 
