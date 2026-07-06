@@ -246,4 +246,3 @@ if __name__ == "__main__":
     mmm.transform_pdf(input_path=input_path, output_path=output_path, output_as="cbz", dpi=200, show_logs=True, verbose=False)
     end = time.perf_counter() - start
     print(f"Program ended in {end}s")
-
