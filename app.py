@@ -8,14 +8,12 @@ from paddleocr import PaddleOCR
 import fitz
 import img2pdf
 from pathlib import Path
-#if you want to see the transformed image
 import matplotlib.pyplot as plt
 
 class MirrorMyManga:
     def __init__(self, lang="en", device="gpu", enable_mkldnn=False, use_doc_orientation_classify=False, use_doc_unwarping=False, use_textline_orientation=False) -> None:
         self.lang = lang
         self.device = device
-        self.ROI = []
         self.use_doc_orientation_classify = use_doc_orientation_classify
         self.use_doc_unwarping = use_doc_unwarping
         self.use_textline_orientation = use_textline_orientation
@@ -53,13 +51,12 @@ class MirrorMyManga:
                         print(f"x = ({x_min}, {x_max})\ny = ({y_min}, {y_max})")
                     x_min, y_min, x_max, y_max = map(int, bbox)
                     cv2.rectangle(panel_copy, pt1=(x_min, y_min), pt2=(x_max, y_max), color=color)
-                #self.show(panel_copy)
         if return_bbox:
             return bboxes, ROI 
         else:
             return ROI
 
-    def transform(self, panel, show_logs=False, verbose=False):
+    def transform(self, panel, show_panel=False, show_logs=False, verbose=False):
         """
             Applies the flipped ROI to the to the detect text ROIs, flips the whole panel then returns the panel
         """
@@ -113,7 +110,16 @@ class MirrorMyManga:
 
         if show_logs:
             print("LOG: image transform time = ", time.perf_counter() - start)
+
+        if show_panel:
+            self.show_panel(flipped_panel)
+
         return flipped_panel
+
+    def show_panel(self, panel):
+        plt.figure(figsize=(20, 10))
+        plt.imshow(cv2.cvtColor(panel, cv2.COLOR_BGR2RGB))
+        plt.show()
 
     def save_imgs_as_pdf(self, input_path, output_path):
         # convert all files ending in .jpg inside a directory
@@ -131,7 +137,7 @@ class MirrorMyManga:
                 path = os.path.join(input_path, fname)
                 zfile.write(path, arcname=fname)
 
-    def transform_pdf(self, input_path: str, output_path: str, dpi=200, show_logs=False, output_as="pdf", verbose=False):
+    def transform_pdf(self, input_path: str, output_path: str, dpi=200, show_logs=False, verbose=False):
         """
             Returns a PDF/CBZ of images transformed by transform method.
             Use it ONLY for PDF
@@ -166,27 +172,28 @@ class MirrorMyManga:
                     print(f"LOG: Pixmap for page {i} genrated in {time.perf_counter() - start}")
                 panel = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width, pix.n)
                 panel = cv2.cvtColor(panel, cv2.COLOR_RGB2BGR)
-                panel = self.transform(panel, show_logs, verbose)
+                panel = self.transform(panel, show_logs=show_logs, verbose=verbose, show_panel=False)
                 cv2.imwrite(f"{result_path}/{i}.jpeg", panel, [cv2.IMWRITE_JPEG_QUALITY, 95])
                 if show_logs:
                     print(f"LOG: page{i} saved in {time.perf_counter() - start}s")
                 i += 1
 
-            if output_as == "pdf":
+            if output_path.endswith(".pdf"):
                 if show_logs:
                     print("LOG: Starting PDF conversion")
                 self.save_imgs_as_pdf(input_path=result_path, output_path=output_path)
-            elif output_as == "cbz":
+            elif output_path.endswith(".cbz"):
                 if show_logs:
                     print("LOG: Starting CBZ conversion")
                 self.save_imgs_as_cbz(input_path=result_path, output_path=output_path)
             else:
                 raise Exception("Incorrect format of output_path")
-            
-            if show_logs:
-                print("Transformed & Saved PDF in ", time.perf_counter() - start)
+            print("result path: ", result_path)
+            shutil.rmtree(result_path)
+        if show_logs:
+            print("Transformed & Saved PDF in ", time.perf_counter() - start)
 
-    def transform_cbz(self, input_path: str, output_path: str, show_logs=False, output_as="cbz"):
+    def transform_cbz(self, input_path: str, output_path: str, show_logs=False):
         """
             Returns a PDF/CBZ of images transformed by transform method. Use it ONLY for CBZ files
             * Note: 
@@ -225,24 +232,26 @@ class MirrorMyManga:
 
             shutil.rmtree(input_path.removesuffix('.cbz'))
 
-            if output_as == "pdf":
-                print("LOG: Starting PDF conversion")
+            if output_path.endswith(".pdf"):
+                if show_logs:
+                    print("LOG: Starting PDF conversion")
                 self.save_imgs_as_pdf(input_path=result_path, output_path=output_path)
-            elif output_as == "cbz":
+            elif output_path.endswith(".cbz"):
                 if show_logs:
                     print("LOG: Starting CBZ conversion")
                 self.save_imgs_as_cbz(input_path=result_path, output_path=output_path)
             else:
                 raise Exception("Incorrect format of output_path")
+            print("result path: ", result_path)
+            shutil.rmtree(result_path)
         else:
             raise FileNotFoundError(f"{input_path} File not found")
 
 if __name__ == "__main__":
     start = time.perf_counter()
     mmm = MirrorMyManga(lang="en", device="gpu")
-    input_dir = Path.cwd()
-    input_path = os.path.join(input_dir, "testPDF.pdf")
-    output_path = os.path.join(input_dir, "testPDF_result.cbz")
-    mmm.transform_pdf(input_path=input_path, output_path=output_path, output_as="cbz", dpi=200, show_logs=True, verbose=False)
+    input_path = "/home/vhvhs/Test/testPDF4.pdf"
+    output_path = os.path.join(Path.cwd(), "testPDF_result4.cbz")
+    mmm.transform_pdf(input_path=input_path, output_path=output_path, dpi=200, show_logs=True, verbose=False)
     end = time.perf_counter() - start
     print(f"Program ended in {end}s")
