@@ -169,7 +169,7 @@ class MirrorMyManga:
                 if show_logs:
                     print(f"Page {i} height, width: {page.get_images()[0][3]}, {page.get_images()[0][2]}")
                     print(f"DPI of page {i} = {dpi}")
-                    print(f"LOG: Pixmap for page {i} genrated in {time.perf_counter() - start}")
+                    print(f"LOG: Pixmap for page {i} generated in {time.perf_counter() - start}")
                 panel = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width, pix.n)
                 panel = cv2.cvtColor(panel, cv2.COLOR_RGB2BGR)
                 panel = self.transform(panel, show_logs=show_logs, verbose=verbose, show_panel=False)
@@ -251,7 +251,7 @@ if __name__ == "__main__":
     start = time.perf_counter()
     mmm = MirrorMyManga(lang="en", device="gpu")
     input_path = "/home/vhvhs/Test/testPDF4.pdf"
-    output_path = os.path.join(Path.cwd(), "testPDF_result4.cbz")
+    output_path = os.path.join(Path.cwd(), "testPDF4_result.pdf")
     mmm.transform_pdf(input_path=input_path, output_path=output_path, dpi=200, show_logs=True, verbose=False)
     end = time.perf_counter() - start
     print(f"Program ended in {end}s")
