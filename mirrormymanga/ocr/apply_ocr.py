@@ -1,6 +1,6 @@
 import numpy as np
 
-def apply_ocr(ocr, panel, use_doc_orientation_classify=False, use_doc_unwarping=False, use_textline_orientation=False):
+def _apply_ocr(ocr, panel, use_doc_orientation_classify=False, use_doc_unwarping=False, use_textline_orientation=False):
     """
         Returns a tuple of detected text and boundary boxes in order: x_min, y_min, x_max, y_max
     """

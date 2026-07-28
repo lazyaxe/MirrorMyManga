@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import time
-from mirrormymanga.ocr import apply_ocr
+from mirrormymanga.ocr import _apply_ocr
 
 def transform_panel(ocr, panel, show_logs=False, verbose=False):
     """
@@ -35,7 +35,7 @@ def transform_panel(ocr, panel, show_logs=False, verbose=False):
     panel_small = cv2.resize(panel, dsize=(new_width, new_witdh))
     
     #detected text and the boundary boxes
-    _, bboxes = apply_ocr(ocr, panel=panel_small)
+    _, bboxes = _apply_ocr(ocr, panel=panel_small)
     
     #scaling back the bboxes to the OG resolution format
     bboxes = (bboxes / aspect_ratio).astype(np.uint16)

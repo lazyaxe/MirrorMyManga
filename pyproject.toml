@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=82.0.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mirrormymanga"
+version = "0.1.0"
+description = "Mirror manga and comics while preserving readable dialogue."
+readme = "README.md"
+requires-python = ">=3.12"
+
+authors = [
+    { name = "Harsh Sharma" }
+]
+
+dependencies = [
+    "numpy>=2.3",
+    "opencv-python-headless>=4.13",
+    "pymupdf>=1.27",
+    "paddleocr>=3.7",
+    "img2pdf>=0.6",
+]
+
+[project.scripts]
+mirrormymanga = "mirrormymanga:cli"

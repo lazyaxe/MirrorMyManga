@@ -1,6 +1,6 @@
 import numpy as np
 from paddleocr import PaddleOCR
-from mirrormymanga.utils import is_cuda_available
+from ..utils import is_cuda_available
 
 def create_ocr(ocrSettings):
     lang = ocrSettings.lang

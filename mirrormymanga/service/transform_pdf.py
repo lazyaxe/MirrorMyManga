@@ -50,7 +50,7 @@ def transform_pdf(ocr, input_path: str, output_path: str, transformPDFSettings):
 
             panel = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width, pix.n)
             panel = cv2.cvtColor(panel, cv2.COLOR_RGB2BGR)
-            panel = transform_panel(ocr, panel=panel, show_logs=show_logs, verbose=verbose)
+            panel = transform_panel(ocr=ocr, panel=panel, show_logs=show_logs, verbose=verbose)
             cv2.imwrite(f"{result_path}/{i}.jpeg", panel, [cv2.IMWRITE_JPEG_QUALITY, 95])
             if show_logs:
                 print(f"LOG: page{i} saved in {time.perf_counter() - start}s")

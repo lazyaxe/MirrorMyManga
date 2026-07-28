@@ -1,13 +1,13 @@
 import numpy as np
 import cv2
 from ..utils import is_cuda_available
-from ..ocr import apply_ocr
+from ..ocr import _apply_ocr
 
-def extract_ROI(panel, draw_bounding_boxes=False, show_logs=False, return_bbox=False, color=(0, 0, 255), lang='en', use_doc_orientation_classify=False, use_doc_unwarping=False, use_textline_orientation=False):
+def _extract_ROI(ocr, panel, draw_bounding_boxes=False, show_logs=False, return_bbox=False, color=(0, 0, 255), lang='en', use_doc_orientation_classify=False, use_doc_unwarping=False, use_textline_orientation=False):
     """
         Returns the detected text as ROI(in form of NumPy array)
     """
-    _, bboxes = apply_ocr(panel, use_doc_orientation_classify=use_doc_orientation_classify, use_doc_unwarping=use_doc_unwarping, use_textline_orientation=use_textline_orientation)
+    _, bboxes = _apply_ocr(ocr=ocr, panel=panel, use_doc_orientation_classify=use_doc_orientation_classify, use_doc_unwarping=use_doc_unwarping, use_textline_orientation=use_textline_orientation)
     ROI = []
     for bbox in bboxes:
         x_min, y_min, x_max, y_max = list(map(int, bbox))
