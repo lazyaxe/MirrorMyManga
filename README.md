@@ -33,9 +33,13 @@ There is currently only two way to use MirrorMyManga:
 
         #inside the directory run command in terminal/cmd prompt:
         $python3 -m pip install -e .
-        
+
+now
+
         #to verify install
         $mirrormymanga --help
+
+then
 
         #to run a simple conversion of Manga
         $mirrormymanga [input_path] [output_path] 
