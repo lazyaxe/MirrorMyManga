@@ -7,10 +7,10 @@ left to right.
 
 ## **Results**:
 ### **Before:**
-![Before](IdealBefore.png)
+![Before](./readme_images/IdealBefore.png)
 
 ### **After:**
-![After](IdealAfter.png)
+![After](./readme_images/IdealAfter.png)
 
 ### **Installation**:
 Currently, there is only one way to use MirrorMyManga software:
@@ -41,7 +41,7 @@ There is currently only two way to use MirrorMyManga:
         $mirrormymanga [input_path] [output_path] 
 
 2. Programatically:
-    You can access MirrorMyManga programatically via both `app.py` file or `./mirrormymanga/app.py` 
+    You can access MirrorMyManga programatically `./mirrormymanga/__main__.py` 
     I have kept both the class version and file tree version of MirrorMyManga both work equivalently in performance and give the same results
 
 3. Web App (Coming Soon)
@@ -51,17 +51,17 @@ There is currently only two way to use MirrorMyManga:
 * Currently the Hero of this project, PaddleOCR lacks the ability to accurately and consistently detect onomotopoeia/SFX words such as "BOOM", "CRASH", "VROOM", "ZOOM" in both japanese and english.
 
 For example:
-![sfx](sfx.png)
+![sfx](./readme_images/sfx.png)
 
 
 2. **Non straight alignment text:** The text which are at an incline are treated properly which results in gibbrish text:
 We gives unexpected results like:
-![gibberish](gibbrish.png)
+![gibberish](./readme_images/gibbrish.png)
 
 
 3. **Cover Pages:** I have not implemented a way to skip the processing of cover pages and non-panel pages as it's not huge issue right now.
 Example
-![cvrpgissue](coverPageIssue.png)
+![cvrpgissue](./readme_images/coverPageIssue.png)
 
 4. **Poor Performance without GPU(Nvidia)/XPU/TPU:** As the **PaddleOCR is heavily dependent on CUDA accelration**, the transformation of each panel can take upto 7s compared to 0.5s for a low-end Nvidia GPU.
 The PaddleOCR GPU defaults to CPU mode if it fails to detect CUDA.
